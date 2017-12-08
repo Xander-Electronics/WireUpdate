@@ -1,7 +1,6 @@
 = Wire Update library for SAMD based boards =
 
-This Arduino library implements a firmware update procedure using I2C bus devices based
-on the Microchip SAMD21 micro controller.
+This Arduino library implements a firmware update procedure using I2C bus on Microchip SAMD21 micro controller based devices.
 
 == License ==
 
