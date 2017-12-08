@@ -1,0 +1,28 @@
+#######################################
+# Syntax Coloring Map For WireUpdate
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+WireUpdate	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+beginSlaves	KEYWORD2
+beginMaster	KEYWORD2
+startUpdate	KEYWORD2
+sendUpdate	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+DEFAULT_UPDATE_ADDRESS	LITERAL1
+OK 	LITERAL1
+FILE_ERROR 	LITERAL1
+SD_ERROR	LITERAL1
+STORAGE_ERROR	LITERAL1
+#######################################
+
