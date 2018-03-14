@@ -16,7 +16,7 @@
 
 void setup() {
   Serial.begin(115200);
-  if (WireUpdate.beginSlave(0xAF)) {
+  if (WireUpdate.beginSlave(0xAF)) {  //optionally WireUpdate.beginMaster(0xAF, myWire); to specify a Wire different from Wire
     Serial.println("Started");
   }
   else {

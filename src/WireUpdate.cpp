@@ -29,14 +29,16 @@ uint32_t _currentSize = 0, _updateSize = 0;
 char _rxBuffer[BUFFER_SIZE];
 uint8_t _rxBufferIndex = 0;
 
+TwoWire* _myWire;
+
 void receiveEvent(int howMany) {
   switch (_updateStatus) {
     default: break;
 
     case UPDATE_IDLE:
       if (howMany == START_UPDATE_SIZE) {
-        while (Wire.available() > 0) {
-          _rxBuffer[_rxBufferIndex++] = Wire.read();
+        while (_myWire->available() > 0) {
+          _rxBuffer[_rxBufferIndex++] = _myWire->read();
         }
         _rxBuffer[_rxBufferIndex] = '\0'; //terminate the string
         if (!strcmp(_rxBuffer, START_UPDATE)) {
@@ -51,8 +53,8 @@ void receiveEvent(int howMany) {
 
     case UPDATE_SIZE:
       if (howMany == 4) {
-        while (Wire.available() > 0) {
-          _rxBuffer[_rxBufferIndex++] = Wire.read();
+        while (_myWire->available() > 0) {
+          _rxBuffer[_rxBufferIndex++] = _myWire->read();
         }
         _updateSize = ((uint32_t)_rxBuffer[0]) + ((uint32_t)_rxBuffer[1] << 8) + ((uint32_t)_rxBuffer[2] << 16) + ((uint32_t)_rxBuffer[3] << 24);
         _updateStatus = UPDATE_RECEIVING;
@@ -64,8 +66,8 @@ void receiveEvent(int howMany) {
       break;
 
     case UPDATE_RECEIVING:
-      while (Wire.available() > 0) {
-        char c = Wire.read();
+      while (_myWire->available() > 0) {
+        char c = _myWire->read();
         InternalStorage.write(c);
       }
       _currentSize += howMany;
@@ -88,23 +90,31 @@ void receiveEvent(int howMany) {
 }
 
 /*Public functions*/
-int WireUpdateClass::beginSlave(void) {
-  Wire.begin(DEFAULT_UPDATE_ADDRESS);
+void WireUpdateClass::setWire(TwoWire* wire) {
+  _myWire = wire;
+}
+
+int WireUpdateClass::beginSlave(TwoWire *wire) {
+  setWire(wire);
+  _myWire->begin(DEFAULT_UPDATE_ADDRESS);
   return initialize();
 }
 
-int WireUpdateClass::beginSlave(uint8_t address) {
-  Wire.begin(address);
+int WireUpdateClass::beginSlave(uint8_t address, TwoWire *wire) {
+  setWire(wire);
+  _myWire->begin(address);
   return initialize();
 }
 
-int WireUpdateClass::beginSlave(int address) {
-  Wire.begin((uint8_t) address);
+int WireUpdateClass::beginSlave(int address, TwoWire *wire) {
+  setWire(wire);
+  _myWire->begin((uint8_t) address);
   return initialize();
 }
 
-int WireUpdateClass::beginMaster(int csPin) {
-  Wire.begin();
+int WireUpdateClass::beginMaster(int csPin, TwoWire *wire) {
+  setWire(wire);
+  _myWire->begin();
 
   if (!SD.begin(csPin)) {
     return SD_ERROR;
@@ -113,9 +123,9 @@ int WireUpdateClass::beginMaster(int csPin) {
 }
 
 void WireUpdateClass::startUpdate(uint8_t address) {
-  Wire.beginTransmission(address);
-  Wire.write(START_UPDATE, strlen(START_UPDATE));
-  Wire.endTransmission();
+  _myWire->beginTransmission(address);
+  _myWire->write(START_UPDATE, strlen(START_UPDATE));
+  _myWire->endTransmission();
 }
 
 int WireUpdateClass::sendUpdate(uint8_t address, const char fileName[]) {
@@ -137,9 +147,9 @@ int WireUpdateClass::sendUpdate(uint8_t address, const char fileName[]) {
       currentByte++;
       totalSize++;
       if ((currentByte >= BUFFER_SIZE) || (totalSize == fileSize))  {
-        Wire.beginTransmission(address);
-        Wire.write(page, currentByte);
-        Wire.endTransmission();
+        _myWire->beginTransmission(address);
+        _myWire->write(page, currentByte);
+        _myWire->endTransmission();
         delay(5);
         currentByte = 0;
       }
@@ -155,7 +165,7 @@ int WireUpdateClass::sendUpdate(uint8_t address, const char fileName[]) {
 
 /*Private functions*/
 int WireUpdateClass::initialize(void) {
-  Wire.onReceive(receiveEvent);
+  _myWire->onReceive(receiveEvent);
   if (!InternalStorage.open()) {
     return STORAGE_ERROR;
   }
@@ -165,12 +175,12 @@ int WireUpdateClass::initialize(void) {
 }
 
 void WireUpdateClass::send(uint8_t address, uint32_t data) {
-  Wire.beginTransmission(address);
-  Wire.write((uint8_t)(data));
-  Wire.write((uint8_t)(data >> 8));
-  Wire.write((uint8_t)(data >> 16));
-  Wire.write((uint8_t)(data >> 24));
-  Wire.endTransmission();
+  _myWire->beginTransmission(address);
+  _myWire->write((uint8_t)(data));
+  _myWire->write((uint8_t)(data >> 8));
+  _myWire->write((uint8_t)(data >> 16));
+  _myWire->write((uint8_t)(data >> 24));
+  _myWire->endTransmission();
 }
 
 WireUpdateClass WireUpdate;

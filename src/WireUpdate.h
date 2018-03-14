@@ -38,11 +38,12 @@ typedef enum {
 
 class WireUpdateClass {
   public:
-    int beginSlave(void);
-    int beginSlave(uint8_t address);
-    int beginSlave(int address);
+    void setWire(TwoWire *wire = &Wire);
+    int beginSlave(TwoWire *wire = &Wire);
+    int beginSlave(uint8_t address, TwoWire *wire = &Wire);
+    int beginSlave(int address, TwoWire *wire = &Wire);
 
-    int beginMaster(int csPin);
+    int beginMaster(int csPin, TwoWire *wire = &Wire);
     int sendUpdate(uint8_t address, const char fileName[]);
 
   private:

@@ -19,7 +19,7 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println("Master firmware update using I2C bus");
-  WireUpdate.beginMaster(4);
+  WireUpdate.beginMaster(4); //optionally WireUpdate.beginMaster(4, myWire); to specify a Wire different from Wire
   delay(100);
   Serial.println("Sending new firmware");
   switch(WireUpdate.sendUpdate(0xAF, "WIRE.bin")) {
